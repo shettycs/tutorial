@@ -21,6 +21,27 @@ app.get('/api/items', async (req, res) => {
     }
 });
 
+// ...existing code...
+
+app.get('/api/items/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const result = await itemsPool.query(
+            'SELECT * FROM items WHERE id = $1',
+            [id]
+        );
+        if (result.rowCount === 0) {
+            return res.status(404).json({ message: "Item not found" });
+        }
+        res.json({ item: result.rows[0] });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send(error.message);
+    }
+});
+
+// ...existing
+
 app.post('/api/items', async (req, res) => {
     const { description } = req.body;
     try {
@@ -32,7 +53,7 @@ app.post('/api/items', async (req, res) => {
             return res.status(400).json({ message: "Failed to add new item" });
         }
         console.log("New item added:", newItem.rows[0]);
-        
+
         res.status(201).json({ 
             message: "New item added!",
             item: newItem.rows
