@@ -64,6 +64,28 @@ app.post('/api/items', async (req, res) => {
     }
 })
 
+app.put('/api/items/:id', async (req, res) => {
+    const { id } = req.params;
+    const { description } = req.body;
+    try {
+        const updatedItem = await itemsPool.query(
+            'UPDATE items SET description = $1 WHERE id = $2 RETURNING *',
+            [description, id]
+        );
+        if (updatedItem.rowCount === 0) {
+            return res.status(404).json({ message: "Item not found" });
+        }
+        res.json({ 
+            message: "Item updated successfully",
+            item: updatedItem.rows[0] 
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send(error.message);
+    }
+});
+
+
 app.listen(5070, () => {
     console.log("Server running on port 5070");
 })
